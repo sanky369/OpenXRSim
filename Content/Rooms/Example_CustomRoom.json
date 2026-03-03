@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "Example_CustomRoom",
+  "units": "cm",
+  "bounds": { "min": [-250, -150, 0], "max": [250, 150, 260] },
+  "planes": [
+    { "id": "floor", "type": "floor", "center": [0,0,0], "normal":[0,0,1], "extents":[500,300] },
+    { "id": "ceiling", "type": "ceiling", "center": [0,0,260], "normal":[0,0,-1], "extents":[500,300] }
+  ],
+  "boxes": [
+    { "id": "table", "center": [80,0,40], "size": [120,60,80] },
+    { "id": "sofa", "center": [-120, -40, 45], "size": [160,80,90] }
+  ],
+  "anchors": [
+    { "id": "spawn", "pose": { "p":[0,0,0], "q":[0,0,0,1] } }
+  ]
+}

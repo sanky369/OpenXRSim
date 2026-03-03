@@ -1,0 +1,14 @@
+# Unreal plugin build artifacts
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+
+# User-specific
+*.VC.db
+*.VC.opendb

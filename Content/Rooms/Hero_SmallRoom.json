@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "name": "Hero_SmallRoom",
+  "units": "cm",
+  "bounds": { "min": [-200, -200, 0], "max": [200, 200, 250] },
+  "boxes": [
+    { "id": "table", "center": [60,0,40], "size": [120,60,80] }
+  ],
+  "anchors": [
+    { "id": "spawn", "pose": { "p":[0,0,0], "q":[0,0,0,1] } }
+  ]
+}
