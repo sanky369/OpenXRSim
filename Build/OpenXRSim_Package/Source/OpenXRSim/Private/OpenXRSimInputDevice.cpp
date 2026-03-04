@@ -55,10 +55,6 @@ namespace OpenXRSimKeyNames
 	const FName OT_Left_Primary(TEXT("OculusTouch_Left_X_Click"));
 	const FName OT_Left_Secondary(TEXT("OculusTouch_Left_Y_Click"));
 	const FName OT_Left_Thumbstick(TEXT("OculusTouch_Left_Thumbstick_Click"));
-	const FName OT_Left_TriggerTouch(TEXT("OculusTouch_Left_Trigger_Touch"));
-	const FName OT_Left_ThumbstickTouch(TEXT("OculusTouch_Left_Thumbstick_Touch"));
-	const FName OT_Left_PrimaryTouch(TEXT("OculusTouch_Left_X_Touch"));
-	const FName OT_Left_SecondaryTouch(TEXT("OculusTouch_Left_Y_Touch"));
 
 	const FName OT_Right_TriggerAxis(TEXT("OculusTouch_Right_Trigger_Axis"));
 	const FName OT_Right_GripAxis(TEXT("OculusTouch_Right_Grip_Axis"));
@@ -69,10 +65,6 @@ namespace OpenXRSimKeyNames
 	const FName OT_Right_Primary(TEXT("OculusTouch_Right_A_Click"));
 	const FName OT_Right_Secondary(TEXT("OculusTouch_Right_B_Click"));
 	const FName OT_Right_Thumbstick(TEXT("OculusTouch_Right_Thumbstick_Click"));
-	const FName OT_Right_TriggerTouch(TEXT("OculusTouch_Right_Trigger_Touch"));
-	const FName OT_Right_ThumbstickTouch(TEXT("OculusTouch_Right_Thumbstick_Touch"));
-	const FName OT_Right_PrimaryTouch(TEXT("OculusTouch_Right_A_Touch"));
-	const FName OT_Right_SecondaryTouch(TEXT("OculusTouch_Right_B_Touch"));
 }
 
 FOpenXRSimInputDevice::FOpenXRSimInputDevice(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
@@ -198,17 +190,7 @@ FVector2D FOpenXRSimInputDevice::GetMouseDelta_AnyPlatform()
 		return FVector2D::ZeroVector;
 	}
 
-	FSlateApplication& SlateApp = FSlateApplication::Get();
-	const FVector2D Now = SlateApp.GetCursorPos();
-	const FVector2D Last = SlateApp.GetLastCursorPos();
-	const FVector2D SlateDelta = Now - Last;
-	if (!SlateDelta.IsNearlyZero())
-	{
-		bPrevMousePosValid = true;
-		PrevMousePos = Now;
-		return SlateDelta;
-	}
-
+	const FVector2D Now = FSlateApplication::Get().GetCursorPos();
 	if (!bPrevMousePosValid)
 	{
 		bPrevMousePosValid = true;
@@ -264,26 +246,26 @@ void FOpenXRSimInputDevice::UpdateFromKeyboardMouse()
 		SimState->ApplyPoseDelta(Dev, Move, RotDelta);
 	}
 
-	// Controller actions.
+	// Controller actions: apply to the active controller when selected (Left/Right)
 	const EOpenXRSimDevice ActiveDev = ActiveDeviceFromIndex(GetActiveDeviceIndex());
-	const bool bTrigger = IsKeyDown_AnyPlatform(EKeys::LeftMouseButton);
-	const bool bGrip    = IsKeyDown_AnyPlatform(EKeys::RightMouseButton);
-
-	// Thumbstick axes as digital -1/0/1 from arrow keys
-	FVector2D Stick = FVector2D::ZeroVector;
-	if (IsKeyDown_AnyPlatform(EKeys::Left))  Stick.X -= 1.0f;
-	if (IsKeyDown_AnyPlatform(EKeys::Right)) Stick.X += 1.0f;
-	if (IsKeyDown_AnyPlatform(EKeys::Up))    Stick.Y += 1.0f;
-	if (IsKeyDown_AnyPlatform(EKeys::Down))  Stick.Y -= 1.0f;
-
-	const bool bPrimary = IsKeyDown_AnyPlatform(EKeys::X);
-	const bool bSecondary = IsKeyDown_AnyPlatform(EKeys::C);
-	const bool bStickClick = IsKeyDown_AnyPlatform(EKeys::V);
-
-	const auto ApplyActions = [&](EOpenXRSimDevice WhichController)
+	if (ActiveDev == EOpenXRSimDevice::Left || ActiveDev == EOpenXRSimDevice::Right)
 	{
+		const bool bTrigger = IsKeyDown_AnyPlatform(EKeys::LeftMouseButton);
+		const bool bGrip    = IsKeyDown_AnyPlatform(EKeys::RightMouseButton);
+
+		// Thumbstick axes as digital -1/0/1 from arrow keys
+		FVector2D Stick = FVector2D::ZeroVector;
+		if (IsKeyDown_AnyPlatform(EKeys::Left))  Stick.X -= 1.0f;
+		if (IsKeyDown_AnyPlatform(EKeys::Right)) Stick.X += 1.0f;
+		if (IsKeyDown_AnyPlatform(EKeys::Up))    Stick.Y += 1.0f;
+		if (IsKeyDown_AnyPlatform(EKeys::Down))  Stick.Y -= 1.0f;
+
+		const bool bPrimary = IsKeyDown_AnyPlatform(EKeys::X);
+		const bool bSecondary = IsKeyDown_AnyPlatform(EKeys::C);
+		const bool bStickClick = IsKeyDown_AnyPlatform(EKeys::V);
+
 		SimState->SetControllerActions(
-			WhichController,
+			ActiveDev,
 			bTrigger ? 1.0f : 0.0f,
 			bGrip ? 1.0f : 0.0f,
 			Stick,
@@ -291,17 +273,6 @@ void FOpenXRSimInputDevice::UpdateFromKeyboardMouse()
 			bSecondary,
 			bStickClick
 		);
-	};
-
-	if (ActiveDev == EOpenXRSimDevice::Left || ActiveDev == EOpenXRSimDevice::Right)
-	{
-		ApplyActions(ActiveDev);
-	}
-	else
-	{
-		// In HMD mode keep hand actions responsive so grasp/collision interactions still work.
-		ApplyActions(EOpenXRSimDevice::Left);
-		ApplyActions(EOpenXRSimDevice::Right);
 	}
 }
 
@@ -428,20 +399,12 @@ void FOpenXRSimInputDevice::PushXRKeysToEngine()
 	const FName LeftPrimaryButtons[] = { OpenXRSimKeyNames::MC_Left_Primary, OpenXRSimKeyNames::OT_Left_Primary };
 	const FName LeftSecondaryButtons[] = { OpenXRSimKeyNames::MC_Left_Secondary, OpenXRSimKeyNames::OT_Left_Secondary };
 	const FName LeftThumbButtons[] = { OpenXRSimKeyNames::MC_Left_Thumbstick, OpenXRSimKeyNames::OT_Left_Thumbstick };
-	const FName LeftTriggerTouchButtons[] = { OpenXRSimKeyNames::OT_Left_TriggerTouch };
-	const FName LeftThumbTouchButtons[] = { OpenXRSimKeyNames::OT_Left_ThumbstickTouch };
-	const FName LeftPrimaryTouchButtons[] = { OpenXRSimKeyNames::OT_Left_PrimaryTouch };
-	const FName LeftSecondaryTouchButtons[] = { OpenXRSimKeyNames::OT_Left_SecondaryTouch };
 
 	SendButton(LeftTriggerButtons, UE_ARRAY_COUNT(LeftTriggerButtons), L.Trigger > 0.5f, bPrevTriggerPressedL);
 	SendButton(LeftGripButtons, UE_ARRAY_COUNT(LeftGripButtons), L.Grip > 0.5f, bPrevGripPressedL);
 	SendButton(LeftPrimaryButtons, UE_ARRAY_COUNT(LeftPrimaryButtons), L.bPrimaryButton, bPrevPrimaryPressedL);
 	SendButton(LeftSecondaryButtons, UE_ARRAY_COUNT(LeftSecondaryButtons), L.bSecondaryButton, bPrevSecondaryPressedL);
 	SendButton(LeftThumbButtons, UE_ARRAY_COUNT(LeftThumbButtons), L.bThumbstickClick, bPrevThumbstickPressedL);
-	SendButton(LeftTriggerTouchButtons, UE_ARRAY_COUNT(LeftTriggerTouchButtons), L.Trigger > 0.01f, bPrevTriggerTouchPressedL);
-	SendButton(LeftThumbTouchButtons, UE_ARRAY_COUNT(LeftThumbTouchButtons), L.Thumbstick.SizeSquared() > 0.0004f || L.bThumbstickClick, bPrevThumbTouchPressedL);
-	SendButton(LeftPrimaryTouchButtons, UE_ARRAY_COUNT(LeftPrimaryTouchButtons), L.bPrimaryButton, bPrevPrimaryTouchPressedL);
-	SendButton(LeftSecondaryTouchButtons, UE_ARRAY_COUNT(LeftSecondaryTouchButtons), L.bSecondaryButton, bPrevSecondaryTouchPressedL);
 
 	SendAnalog(OpenXRSimKeyNames::MC_Right_TriggerAxis, R.Trigger);
 	SendAnalog(OpenXRSimKeyNames::MC_Right_GripAxis, R.Grip);
@@ -457,18 +420,10 @@ void FOpenXRSimInputDevice::PushXRKeysToEngine()
 	const FName RightPrimaryButtons[] = { OpenXRSimKeyNames::MC_Right_Primary, OpenXRSimKeyNames::OT_Right_Primary };
 	const FName RightSecondaryButtons[] = { OpenXRSimKeyNames::MC_Right_Secondary, OpenXRSimKeyNames::OT_Right_Secondary };
 	const FName RightThumbButtons[] = { OpenXRSimKeyNames::MC_Right_Thumbstick, OpenXRSimKeyNames::OT_Right_Thumbstick };
-	const FName RightTriggerTouchButtons[] = { OpenXRSimKeyNames::OT_Right_TriggerTouch };
-	const FName RightThumbTouchButtons[] = { OpenXRSimKeyNames::OT_Right_ThumbstickTouch };
-	const FName RightPrimaryTouchButtons[] = { OpenXRSimKeyNames::OT_Right_PrimaryTouch };
-	const FName RightSecondaryTouchButtons[] = { OpenXRSimKeyNames::OT_Right_SecondaryTouch };
 
 	SendButton(RightTriggerButtons, UE_ARRAY_COUNT(RightTriggerButtons), R.Trigger > 0.5f, bPrevTriggerPressedR);
 	SendButton(RightGripButtons, UE_ARRAY_COUNT(RightGripButtons), R.Grip > 0.5f, bPrevGripPressedR);
 	SendButton(RightPrimaryButtons, UE_ARRAY_COUNT(RightPrimaryButtons), R.bPrimaryButton, bPrevPrimaryPressedR);
 	SendButton(RightSecondaryButtons, UE_ARRAY_COUNT(RightSecondaryButtons), R.bSecondaryButton, bPrevSecondaryPressedR);
 	SendButton(RightThumbButtons, UE_ARRAY_COUNT(RightThumbButtons), R.bThumbstickClick, bPrevThumbstickPressedR);
-	SendButton(RightTriggerTouchButtons, UE_ARRAY_COUNT(RightTriggerTouchButtons), R.Trigger > 0.01f, bPrevTriggerTouchPressedR);
-	SendButton(RightThumbTouchButtons, UE_ARRAY_COUNT(RightThumbTouchButtons), R.Thumbstick.SizeSquared() > 0.0004f || R.bThumbstickClick, bPrevThumbTouchPressedR);
-	SendButton(RightPrimaryTouchButtons, UE_ARRAY_COUNT(RightPrimaryTouchButtons), R.bPrimaryButton, bPrevPrimaryTouchPressedR);
-	SendButton(RightSecondaryTouchButtons, UE_ARRAY_COUNT(RightSecondaryTouchButtons), R.bSecondaryButton, bPrevSecondaryTouchPressedR);
 }

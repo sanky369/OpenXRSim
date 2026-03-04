@@ -24,7 +24,7 @@ public:
 	virtual bool GetControllerOrientationAndPosition(const int32 ControllerIndex, const FName MotionSource,
 		FRotator& OutOrientation, FVector& OutPosition, float WorldToMetersScale) const override
 	{
-		if (!GetDefault<UOpenXRSimSettings>()->bEnableSimulator || !GEngine || !GEngine->XRSystem.IsValid())
+		if (!GetDefault<UOpenXRSimSettings>()->bEnableSimulator || ControllerIndex != 0 || !GEngine || !GEngine->XRSystem.IsValid())
 		{
 			return false;
 		}
@@ -45,36 +45,17 @@ public:
 			return false;
 		};
 
-		const auto IsLeftSource = [&](const FName& SourceName) -> bool
-		{
-			return SourceName == IMotionController::LeftHandSourceId
-				|| SourceName == FName(TEXT("Left"))
-				|| SourceName == FName(TEXT("LeftGrip"))
-				|| SourceName == FName(TEXT("LeftAim"))
-				|| SourceName == FName(TEXT("LeftHand"));
-		};
-
-		const auto IsRightSource = [&](const FName& SourceName) -> bool
-		{
-			return SourceName == IMotionController::RightHandSourceId
-				|| SourceName == FName(TEXT("Right"))
-				|| SourceName == FName(TEXT("RightGrip"))
-				|| SourceName == FName(TEXT("RightAim"))
-				|| SourceName == FName(TEXT("RightHand"));
-		};
-
 		EControllerHand Hand = EControllerHand::AnyHand;
-		if (IsLeftSource(MotionSource))
+		if (!IMotionController::GetHandEnumForSourceName(MotionSource, Hand))
 		{
-			Hand = EControllerHand::Left;
-		}
-		else if (IsRightSource(MotionSource))
-		{
-			Hand = EControllerHand::Right;
-		}
-		else
-		{
-			IMotionController::GetHandEnumForSourceName(MotionSource, Hand);
+			if (MotionSource == FName(TEXT("LeftGrip")) || MotionSource == FName(TEXT("LeftAim")))
+			{
+				Hand = EControllerHand::Left;
+			}
+			else if (MotionSource == FName(TEXT("RightGrip")) || MotionSource == FName(TEXT("RightAim")))
+			{
+				Hand = EControllerHand::Right;
+			}
 		}
 
 		if (Hand == EControllerHand::Left)

@@ -65,7 +65,7 @@ It does not currently emulate the full OpenXR loader/runtime boundary (`xrCreate
    - `Window -> OpenXR Simulator`
 2. Click toolbar toggle:
    - `OpenXR Sim` (ACTIVE)
-3. Initialize room:
+3. (Optional) Initialize a simulated room:
    - `Load Built-in Room` (or JSON room)
 4. Start `VR Preview` or `PIE`.
 
@@ -82,26 +82,32 @@ SteamVR=20
 Recommended plugin setting for startup automation:
 
 - `OpenXR Simulator` settings (`Project Settings -> Plugins -> OpenXR Simulator`):
-  - `bLoadRoomOnWorldStart = true`
-  - `bPreferBuiltInRoomOnWorldStart = true` (or set `DefaultRoomJsonRelative`)
+  - `bAlignToPlayerStartOnWorldStart = true` (default; starts simulator at your map's player spawn/pawn facing)
+  - `bLoadRoomOnWorldStart = false` (default; stays in your existing map)
+  - `bPreferBuiltInRoomOnWorldStart = false` unless you explicitly want simulator room geometry
   - `bAutoReplayOnWorldStart = true` with `AutoReplayPath` for deterministic test flows
 
 ## 6) Desktop Controls (Default)
+
+- Focus the `VR Preview` window before testing input.
+- Press `1` first to control the HMD pose.
 
 - Device select:
   - `1` = HMD
   - `2` = Left controller
   - `3` = Right controller
 - Pose driving:
-  - Hold `Left Alt` + `W/A/S/D/Q/E` to translate selected device
-  - Hold `Left Alt` + mouse move to rotate selected device
-- Controller actions (when active device is Left or Right):
+  - Hold `Left Alt` + `W/A/S/D/Q/E` to translate selected device (or disable Alt requirement via `bRequireAltForPoseControl=false`)
+  - Hold `Left Alt` + mouse move to rotate selected device (or rotate directly when Alt requirement is disabled)
+- Controller actions:
   - `LMB` -> Trigger
   - `RMB` -> Grip
   - Arrow keys -> Thumbstick (`X/Y`)
   - `X` -> Primary button
   - `C` -> Secondary button
   - `V` -> Thumbstick click
+  - If active device is Left/Right (`2`/`3`), actions apply to that controller.
+  - If active device is HMD (`1`), actions are mirrored to both controllers so grasp/collision tests still work.
 
 Gamepad mappings (XInput):
 - Left side drives left controller action state:
@@ -110,6 +116,11 @@ Gamepad mappings (XInput):
   - `RT` trigger, `RB` grip, `RStick` thumbstick, `A/B` primary/secondary, `R3` stick click
 - Optional pose driving:
   - when `bGamepadDrivesActiveDevicePose = true`, sticks move/rotate selected device
+
+Quick sanity sequence:
+1. Press `1`, hold `Left Alt`, then `W/A/S/D/Q/E` to verify camera movement.
+2. Press `2`, then use `LMB/RMB/Arrow keys/X/C/V` to verify left-hand actions.
+3. Press `3`, then repeat action keys to verify right-hand actions.
 
 ## 7) Record / Replay
 
@@ -274,6 +285,7 @@ Key options:
 - IPD/FOV/render target hints
 - default room/replay paths
 - active device index
+- startup pose options (`bAlignToPlayerStartOnWorldStart`, standing height, controller offsets)
 
 ## 14) Known Limitations
 

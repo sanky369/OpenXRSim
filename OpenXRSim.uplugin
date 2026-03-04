@@ -12,7 +12,13 @@
   "SupportURL": "",
   "CanContainContent": true,
   "IsBetaVersion": true,
-  "EnabledByDefault": false,
+  "EnabledByDefault": true,
+  "Plugins": [
+    {
+      "Name": "XRBase",
+      "Enabled": true
+    }
+  ],
   "Modules": [
     {
       "Name": "OpenXRSim",

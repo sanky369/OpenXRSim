@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "fixed_dt": 0.0166667,
+  "room": "Hero_SmallRoom",
+  "frames": [
+    { "t": 0.0000,
+      "hmd": { "p":[0,0,170], "q":[0,0,0,1] },
+      "l": { "gripPose": { "p":[-20,20,140], "q":[0,0,0,1] }, "aimPose": { "p":[-20,20,140], "q":[0,0,0,1] },
+             "trigger":0.0, "grip":0.0, "stick":[0,0], "primary":false, "secondary":false, "stickClick":false },
+      "r": { "gripPose": { "p":[20,20,140], "q":[0,0,0,1] }, "aimPose": { "p":[20,20,140], "q":[0,0,0,1] },
+             "trigger":0.0, "grip":0.0, "stick":[0,0], "primary":false, "secondary":false, "stickClick":false }
+    },
+    { "t": 0.0167,
+      "hmd": { "p":[0,2,170], "q":[0,0,0,1] },
+      "l": { "gripPose": { "p":[-20,20,140], "q":[0,0,0,1] }, "aimPose": { "p":[-20,20,140], "q":[0,0,0,1] },
+             "trigger":0.0, "grip":0.0, "stick":[0,0], "primary":false, "secondary":false, "stickClick":false },
+      "r": { "gripPose": { "p":[20,20,140], "q":[0,0,0,1] }, "aimPose": { "p":[20,20,140], "q":[0,0,0,1] },
+             "trigger":0.0, "grip":0.0, "stick":[0,0], "primary":false, "secondary":false, "stickClick":false }
+    }
+  ]
+}

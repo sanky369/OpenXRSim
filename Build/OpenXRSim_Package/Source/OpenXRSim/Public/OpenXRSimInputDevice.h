@@ -38,19 +38,11 @@ private:
 	bool bPrevPrimaryPressedL = false;
 	bool bPrevSecondaryPressedL = false;
 	bool bPrevThumbstickPressedL = false;
-	bool bPrevTriggerTouchPressedL = false;
-	bool bPrevThumbTouchPressedL = false;
-	bool bPrevPrimaryTouchPressedL = false;
-	bool bPrevSecondaryTouchPressedL = false;
 	bool bPrevTriggerPressedR = false;
 	bool bPrevGripPressedR = false;
 	bool bPrevPrimaryPressedR = false;
 	bool bPrevSecondaryPressedR = false;
 	bool bPrevThumbstickPressedR = false;
-	bool bPrevTriggerTouchPressedR = false;
-	bool bPrevThumbTouchPressedR = false;
-	bool bPrevPrimaryTouchPressedR = false;
-	bool bPrevSecondaryTouchPressedR = false;
 
 	// Helpers
 	void UpdateFromKeyboardMouse();
